@@ -1,0 +1,167 @@
+```python
+"""
+Практична робота: Математичне моделювання екологічних систем
+Модель взаємодії «Хижак–Жертва» (Лотки–Вольтерри)
+Чисельне розв'язання методом Ейлера
+"""
+
+import matplotlib.pyplot as plt
+
+
+# ── параметри системи ─────────────────────────────────────────────
+
+A = 1.1      # швидкість розмноження зайців
+B = 0.4      # інтенсивність полювання вовків
+D = 0.1      # приріст вовків за рахунок здобичі
+G = 0.4      # природне скорочення популяції вовків
+
+hares_start = 10.0
+wolves_start = 5.0
+
+STEP = 0.05
+TIME_BEGIN = 0.0
+TIME_FINISH = 100.0
+
+
+# ── функція для обчислення змін популяцій ────────────────────────
+
+def population_change(hares: float, wolves: float):
+    """
+    Розрахунок похідних для системи Лотки–Вольтерри.
+    """
+
+    d_hares = A * hares - B * hares * wolves
+    d_wolves = D * hares * wolves - G * wolves
+
+    return d_hares, d_wolves
+
+
+# ── чисельне інтегрування ────────────────────────────────────────
+
+def simulate_ecosystem():
+    """
+    Виконує моделювання методом Ейлера.
+    """
+
+    times = [TIME_BEGIN]
+    hares_list = [hares_start]
+    wolves_list = [wolves_start]
+
+    hares = hares_start
+    wolves = wolves_start
+    current_time = TIME_BEGIN
+
+    while current_time < TIME_FINISH:
+
+        dh, dw = population_change(hares, wolves)
+
+        hares += dh * STEP
+        wolves += dw * STEP
+        current_time += STEP
+
+        hares = max(0, hares)
+        wolves = max(0, wolves)
+
+        times.append(current_time)
+        hares_list.append(hares)
+        wolves_list.append(wolves)
+
+    return times, hares_list, wolves_list
+
+
+# ── побудова графіків ────────────────────────────────────────────
+
+def show_graphs(times, hares_data, wolves_data):
+
+    figure, axis = plt.subplots(1, 2, figsize=(14, 5))
+
+    figure.suptitle(
+        "Модель взаємодії популяцій Лотки–Вольтерри",
+        fontsize=14,
+        fontweight="bold"
+    )
+
+    # Графік зміни чисельності
+
+    axis[0].plot(
+        times,
+        hares_data,
+        label="Популяція зайців",
+        linewidth=1.5
+    )
+
+    axis[0].plot(
+        times,
+        wolves_data,
+        label="Популяція вовків",
+        linewidth=1.5
+    )
+
+    axis[0].set_title("Динаміка чисельності популяцій")
+    axis[0].set_xlabel("Час")
+    axis[0].set_ylabel("Кількість особин")
+    axis[0].legend()
+    axis[0].grid(True, linestyle="--", alpha=0.5)
+
+    # Фазова траєкторія
+
+    axis[1].plot(
+        hares_data,
+        wolves_data,
+        linewidth=1.2,
+        alpha=0.85
+    )
+
+    axis[1].scatter(
+        [hares_data[0]],
+        [wolves_data[0]],
+        s=60,
+        label="Початковий стан"
+    )
+
+    axis[1].scatter(
+        [hares_data[-1]],
+        [wolves_data[-1]],
+        s=60,
+        label="Кінцевий стан"
+    )
+
+    axis[1].set_title("Фазовий портрет системи")
+    axis[1].set_xlabel("Кількість зайців")
+    axis[1].set_ylabel("Кількість вовків")
+    axis[1].legend()
+    axis[1].grid(True, linestyle="--", alpha=0.5)
+
+    plt.tight_layout()
+    plt.savefig("ecosystem_model.png", dpi=150)
+    print("Зображення збережено у файл ecosystem_model.png")
+
+    plt.show()
+
+
+# ── головний блок програми ───────────────────────────────────────
+
+def run():
+
+    print("Моделювання екосистеми за моделлю Лотки–Вольтерри")
+    print(f"A={A}, B={B}, D={D}, G={G}")
+    print(
+        f"Початкові умови: "
+        f"зайці={hares_start}, вовки={wolves_start}"
+    )
+    print(f"Крок інтегрування = {STEP}\n")
+
+    t, h, w = simulate_ecosystem()
+
+    print(f"Кількість кроків: {len(t)-1}")
+    print(f"Найбільша кількість зайців: {max(h):.2f}")
+    print(f"Найбільша кількість вовків: {max(w):.2f}")
+    print(f"Найменша кількість зайців: {min(h):.2f}")
+    print(f"Найменша кількість вовків: {min(w):.2f}\n")
+
+    show_graphs(t, h, w)
+
+
+if __name__ == "__main__":
+    run()
+```
